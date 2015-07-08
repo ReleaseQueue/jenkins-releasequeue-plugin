@@ -59,11 +59,11 @@ public class ReleaseQueueServer implements ServerConnection{
         this.userId = rezObj.get("user_id").toString();
     }
     
-    public void uploadPackage(FilePath packagePath, String distribution, String component)
+    public HttpResponse uploadPackage(FilePath packagePath, String distribution, String component)
         throws MalformedURLException, IOException {
         requestToken(email, password);
         
-        String uploadPath = String.format("%s/%s/repositories/deb/%s/%s/packages", this.basePath, this.userId, distribution, component);
+        String uploadPath = String.format("%s/%s/repositories/deb/packages?distribution=%s&component=%s", this.basePath, this.userId, distribution, component);
         URL uploadPackageUrl = new URL(this.serverUrl, uploadPath);
         
         CloseableHttpClient httpClient = HttpClients.createDefault();
@@ -77,7 +77,7 @@ public class ReleaseQueueServer implements ServerConnection{
         uploadFile.setEntity(multipart);
 
         HttpResponse response = httpClient.execute(uploadFile);
-        HttpEntity responseEntity = response.getEntity();
+        return response;
     }
     
     private Object postJsonRequest(URL url, JSONObject payload) throws IOException{

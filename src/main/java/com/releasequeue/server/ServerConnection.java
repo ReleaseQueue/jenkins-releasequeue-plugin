@@ -9,6 +9,7 @@ package com.releasequeue.server;
 import hudson.FilePath;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import org.apache.http.HttpResponse;
 import org.json.simple.JSONArray;
 
 /**
@@ -18,7 +19,7 @@ import org.json.simple.JSONArray;
 public interface ServerConnection {
 
     public void setCredentials(String serverUrl, String email, String password) throws MalformedURLException;
-    public void uploadPackage(FilePath packagePath, String distribution, String component) throws MalformedURLException, IOException;
+    public HttpResponse uploadPackage(FilePath packagePath, String distribution, String component) throws MalformedURLException, IOException;
     public JSONArray listProducts() throws IOException;
     public JSONArray listSubscriptions(String productId) throws MalformedURLException, IOException;
     public void addWebHookSubscription(String productName, String targetUrl) throws MalformedURLException, IOException;

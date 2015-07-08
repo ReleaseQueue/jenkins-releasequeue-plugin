@@ -19,6 +19,10 @@ import org.kohsuke.stapler.bind.JavaScriptMethod;
 
 import java.io.*;
 import jenkins.model.Jenkins;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
+import org.apache.http.util.EntityUtils;
 import org.kohsuke.stapler.QueryParameter;
 
 public class ReleaseQueuePackagePublisher extends Notifier {
@@ -96,7 +100,14 @@ public class ReleaseQueuePackagePublisher extends Notifier {
         
         for(FilePath pkg: packages){
             log(listener, String.format("Uploading: %s", pkg.toString()));
-            server.uploadPackage(pkg, getDistribution(), getComponent());
+            HttpResponse response = server.uploadPackage(pkg, getDistribution(), getComponent());
+
+            String retString = EntityUtils.toString(response.getEntity());
+            int statusCode = response.getStatusLine().getStatusCode();
+
+            if (statusCode != 200){
+                log(listener, String.format("Error response from server: %s", retString));
+            }
         }
 
         return true;
