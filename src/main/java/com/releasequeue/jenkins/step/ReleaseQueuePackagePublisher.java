@@ -101,13 +101,16 @@ public class ReleaseQueuePackagePublisher extends Notifier {
         for(FilePath pkg: packages){
             log(listener, String.format("Uploading: %s", pkg.toString()));
             HttpResponse response = server.uploadPackage(pkg, getDistribution(), getComponent());
+            if (response != null){
+                String retString = EntityUtils.toString(response.getEntity());
+                int statusCode = response.getStatusLine().getStatusCode();
 
-            String retString = EntityUtils.toString(response.getEntity());
-            int statusCode = response.getStatusLine().getStatusCode();
-
-            if (statusCode != 200){
-                log(listener, String.format("Error response from server: %s", retString));
+                if (statusCode != 200){
+                    log(listener, String.format("Error response from server: %s", retString));
+                }
             }
+            else
+                log(listener, String.format("Error connecting to server"));
         }
 
         return true;

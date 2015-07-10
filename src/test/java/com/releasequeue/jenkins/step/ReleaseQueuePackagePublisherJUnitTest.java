@@ -104,7 +104,7 @@ public class ReleaseQueuePackagePublisherJUnitTest{
         String pattern = "test.deb";
         FreeStyleProject project = j.createFreeStyleProject();
         ReleaseQueueServer server = mock(ReleaseQueueServer.class);
-        
+       
         ReleaseQueuePackagePublisher testPublisher = new ReleaseQueuePackagePublisher(dist, comp, pattern, server);
         project.getPublishersList().add(testPublisher);
         

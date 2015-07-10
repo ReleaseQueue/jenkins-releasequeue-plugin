@@ -43,7 +43,7 @@ public class ReleaseQueueServer implements ServerConnection{
     public final void setCredentials(String serverUrl, String email, String password) throws MalformedURLException{
         this.email = email;
         this.password = password;
-        this.serverUrl = new URL(serverUrl);        
+        this.serverUrl = serverUrl != null ? new URL(serverUrl) : null;
     }
     
     private void requestToken(String email, String password) throws IOException{       
