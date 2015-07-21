@@ -26,7 +26,7 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.util.EntityUtils;
 
 public class ReleaseQueueServer implements ServerConnection{
-    private final String basePath = "/api/users";
+    private final String basePath = "/users";
     private final String signInPath = basePath + "/sign_in";
     private URL serverUrl;
     private String email;
@@ -172,6 +172,9 @@ public class ReleaseQueueServer implements ServerConnection{
     }
     
     public JSONArray listProducts() throws IOException {
+        if (this.userId == null){
+             requestToken(email, password);
+        }
         String productsPath = String.format("%s/%s/products", this.basePath, this.userId);
         URL productsUrl = new URL(this.serverUrl, productsPath);
         

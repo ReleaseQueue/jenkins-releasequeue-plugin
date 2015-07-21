@@ -93,7 +93,9 @@ public class ReleaseQueueWebHookTrigger extends Trigger<AbstractProject<?, ?>> {
     @Override
     public void stop(){
         try{
-            server.removeWebHookSubscription(product, triggerUrl.toString());
+            if(product != null && triggerUrl != null){
+                server.removeWebHookSubscription(product, triggerUrl.toString());
+            }
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         } catch (IOException e){
@@ -136,9 +138,10 @@ public class ReleaseQueueWebHookTrigger extends Trigger<AbstractProject<?, ?>> {
                 try{
                     ServerConnection server = ConnectionManager.getConnection();
                     JSONArray products = server.listProducts();
-
-                    for (Object product: products){
-                        items.add(((JSONObject)product).get("name").toString());
+                    if (products != null){
+                        for (Object product: products){
+                            items.add(((JSONObject)product).get("name").toString());
+                        }
                     }
                 }
                 catch (Exception e) {
