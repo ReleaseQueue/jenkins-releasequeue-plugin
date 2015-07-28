@@ -14,6 +14,7 @@ import org.json.simple.parser.ParseException;
 import org.json.simple.parser.JSONParser;
 
 import hudson.FilePath;
+import org.apache.commons.io.FilenameUtils;
 
 import org.apache.http.impl.client.*;
 import org.apache.http.client.methods.HttpPost;
@@ -27,12 +28,12 @@ import org.apache.http.util.EntityUtils;
 
 public class ReleaseQueueServer implements ServerConnection{
     private final String basePath = "/users";
-    private final String signInPath = basePath + "/sign_in";
+    private final String signInPath = "/signin";
     private URL serverUrl;
     private String email;
     private String password;
     private String token;
-    private String userId;
+    private String userName;
     
     public ReleaseQueueServer(String serverUrl, String email, String password) 
             throws MalformedURLException, IOException{
@@ -55,15 +56,16 @@ public class ReleaseQueueServer implements ServerConnection{
         jsonData.put("password", password);
 
         JSONObject rezObj = (JSONObject)postJsonRequest(signInUrl, jsonData);
-        this.token = rezObj.get("auth_token").toString();
-        this.userId = rezObj.get("user_id").toString();
+        this.token = rezObj.get("token").toString();
+        this.userName = rezObj.get("username").toString();
     }
     
     public HttpResponse uploadPackage(FilePath packagePath, String distribution, String component)
         throws MalformedURLException, IOException {
         requestToken(email, password);
+        String repoType = FilenameUtils.getExtension(packagePath.toString());
         
-        String uploadPath = String.format("%s/%s/repositories/deb/packages?distribution=%s&component=%s", this.basePath, this.userId, distribution, component);
+        String uploadPath = String.format("%s/%s/repositories/%s/packages?distribution=%s&component=%s", this.basePath, this.userName, repoType, distribution, component);
         URL uploadPackageUrl = new URL(this.serverUrl, uploadPath);
         
         CloseableHttpClient httpClient = HttpClients.createDefault();
@@ -172,10 +174,10 @@ public class ReleaseQueueServer implements ServerConnection{
     }
     
     public JSONArray listProducts() throws IOException {
-        if (this.userId == null){
+        if (this.userName == null){
              requestToken(email, password);
         }
-        String productsPath = String.format("%s/%s/products", this.basePath, this.userId);
+        String productsPath = String.format("%s/%s/products", this.basePath, this.userName);
         URL productsUrl = new URL(this.serverUrl, productsPath);
         
         JSONArray products = (JSONArray)getJsonRequest(productsUrl);        
@@ -183,7 +185,7 @@ public class ReleaseQueueServer implements ServerConnection{
     } 
     
     public JSONArray listSubscriptions(String productId) throws MalformedURLException, IOException {
-        String subscriptionsPath = String.format("%s/%s/products/%s/webhook_subscriptions", this.basePath, this.userId, productId);
+        String subscriptionsPath = String.format("%s/%s/products/%s/webhook_subscriptions", this.basePath, this.userName, productId);
         URL subscriptionsUrl = new URL(this.serverUrl, subscriptionsPath);
         JSONArray subscriptions = (JSONArray)getJsonRequest(subscriptionsUrl);
         return subscriptions;
@@ -198,13 +200,13 @@ public class ReleaseQueueServer implements ServerConnection{
         if (productId != null){
             String subscriptionId = getSubscriptionIdByUrl(productId, targetUrl);
             if (subscriptionId == null){
-                String subscriptionsPath = String.format("%s/%s/products/%s/webhook_subscriptions", this.basePath, this.userId, productId);
+                String subscriptionsPath = String.format("%s/%s/products/%s/webhook_subscriptions", this.basePath, this.userName, productId);
                 URL subscriptionsUrl = new URL(this.serverUrl, subscriptionsPath);
 
                 JSONObject jsonData = new JSONObject();
                 jsonData.put("event_name", "product_version.create");
                 jsonData.put("product_id", productId);
-                jsonData.put("user_id", this.userId);
+                jsonData.put("username", this.userName);
                 jsonData.put("target_url", targetUrl);
                 jsonData.put("payload_type", "json");
                 
@@ -225,7 +227,7 @@ public class ReleaseQueueServer implements ServerConnection{
         if (subscriptionId == null)
             return;
         
-        String subscriptionsPath = String.format("%s/%s/products/%s/webhook_subscriptions/%s", this.basePath, this.userId, productId, subscriptionId);
+        String subscriptionsPath = String.format("%s/%s/products/%s/webhook_subscriptions/%s", this.basePath, this.userName, productId, subscriptionId);
         URL subscriptionsUrl = new URL(this.serverUrl, subscriptionsPath);
         
         deleteRequest(subscriptionsUrl);
