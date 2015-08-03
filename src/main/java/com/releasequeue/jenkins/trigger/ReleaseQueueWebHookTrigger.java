@@ -33,23 +33,23 @@ import org.kohsuke.stapler.QueryParameter;
  * @author adrian
  */
 public class ReleaseQueueWebHookTrigger extends Trigger<AbstractProject<?, ?>> {
-    private String product;
+    private String application;
     private URL triggerUrl;
     private ServerConnection server;
     
-    public ReleaseQueueWebHookTrigger(String product, ServerConnection server) throws Exception {
+    public ReleaseQueueWebHookTrigger(String application, ServerConnection server) throws Exception {
         super();
-        this.product = product;
+        this.application = application;
         this.server = server;
     }
     
     @DataBoundConstructor
-    public ReleaseQueueWebHookTrigger(String product) throws Exception {
-        this(product, ConnectionManager.getConnection());
+    public ReleaseQueueWebHookTrigger(String application) throws Exception {
+        this(application, ConnectionManager.getConnection());
     }
     
-    public String getProduct(){
-        return this.product;
+    public String getApplication(){
+        return this.application;
     }   
 
     // Overridden for better type safety.
@@ -62,7 +62,7 @@ public class ReleaseQueueWebHookTrigger extends Trigger<AbstractProject<?, ?>> {
     
     @Override
     public void start(AbstractProject<?, ?> project, boolean newInstance){
-        if(product != null && !product.isEmpty() && !product.startsWith("Error:")){
+        if(application != null && !application.isEmpty() && !application.startsWith("Error:")){
             
             try {
                 URL absoluteUrl = new URL(project.getAbsoluteUrl());
@@ -76,7 +76,7 @@ public class ReleaseQueueWebHookTrigger extends Trigger<AbstractProject<?, ?>> {
                 if (serverUrl != null && email != null && password != null)
                     server.setCredentials(serverUrl, email, password);
                 
-                server.addWebHookSubscription(product, triggerUrl.toString());
+                server.addWebHookSubscription(application, triggerUrl.toString());
                 
                 project.addTrigger(this);
                 
@@ -93,8 +93,8 @@ public class ReleaseQueueWebHookTrigger extends Trigger<AbstractProject<?, ?>> {
     @Override
     public void stop(){
         try{
-            if(product != null && triggerUrl != null){
-                server.removeWebHookSubscription(product, triggerUrl.toString());
+            if(application != null && triggerUrl != null){
+                server.removeWebHookSubscription(application, triggerUrl.toString());
             }
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
@@ -102,11 +102,7 @@ public class ReleaseQueueWebHookTrigger extends Trigger<AbstractProject<?, ?>> {
             throw new RuntimeException(e);
         }
     }    
-        
-    public String getproduct() {
-        return this.product;
-    }      
-    
+           
     @Extension
     public static class DescriptorImpl extends TriggerDescriptor {
         
@@ -120,7 +116,7 @@ public class ReleaseQueueWebHookTrigger extends Trigger<AbstractProject<?, ?>> {
             return "ReleaseQueueBuildTrigger";
         }               
         
-        public ListBoxModel doFillProductItems() throws InterruptedException, IOException{
+        public ListBoxModel doFillApplicationItems() throws InterruptedException, IOException{
             
             ReleaseQueueGlobalDescriptor.DescriptorImpl globalDescriptor = 
                 (ReleaseQueueGlobalDescriptor.DescriptorImpl)Jenkins.getInstance().getDescriptor(ReleaseQueueGlobalDescriptor.class);   
@@ -137,10 +133,10 @@ public class ReleaseQueueWebHookTrigger extends Trigger<AbstractProject<?, ?>> {
 
                 try{
                     ServerConnection server = ConnectionManager.getConnection();
-                    JSONArray products = server.listProducts();
-                    if (products != null){
-                        for (Object product: products){
-                            items.add(((JSONObject)product).get("name").toString());
+                    JSONArray applications = server.listApplications();
+                    if (applications != null){
+                        for (Object application: applications){
+                            items.add(((JSONObject)application).get("name").toString());
                         }
                     }
                 }
@@ -152,7 +148,7 @@ public class ReleaseQueueWebHookTrigger extends Trigger<AbstractProject<?, ?>> {
             return items;
         }
         
-        public FormValidation doCheckProduct(@QueryParameter String value) {
+        public FormValidation doCheckApplication(@QueryParameter String value) {
 
             ReleaseQueueGlobalDescriptor.DescriptorImpl globalDescriptor = 
                 (ReleaseQueueGlobalDescriptor.DescriptorImpl)Jenkins.getInstance().getDescriptor(ReleaseQueueGlobalDescriptor.class);               

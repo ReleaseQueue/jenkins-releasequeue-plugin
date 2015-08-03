@@ -20,9 +20,9 @@ public interface ServerConnection {
 
     public void setCredentials(String serverUrl, String email, String password) throws MalformedURLException;
     public HttpResponse uploadPackage(FilePath packagePath, String distribution, String component) throws MalformedURLException, IOException;
-    public JSONArray listProducts() throws IOException;
-    public JSONArray listSubscriptions(String productId) throws MalformedURLException, IOException;
-    public void addWebHookSubscription(String productName, String targetUrl) throws MalformedURLException, IOException;
-    public void removeWebHookSubscription(String productName, String targetUrl) throws IOException;
+    public JSONArray listApplications() throws IOException;
+    public JSONArray listSubscriptions(String applicationId) throws MalformedURLException, IOException;
+    public void addWebHookSubscription(String applicationName, String targetUrl) throws MalformedURLException, IOException;
+    public void removeWebHookSubscription(String applicationName, String targetUrl) throws IOException;
     
 }

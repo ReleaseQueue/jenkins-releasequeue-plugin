@@ -7,7 +7,6 @@
 package com.releasequeue.jenkins.action;
 
 import com.releasequeue.jenkins.trigger.ReleaseQueueWebHookTrigger;
-import com.releasequeue.jenkins.action.ReleaseQueueWebHookAction;
 import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.Action;

@@ -62,11 +62,11 @@ public class ReleaseQueueWebHookBuildTriggerJUnitTest {
     public void addWebHookTest() 
     throws Exception, InterruptedException, IOException, ExecutionException{
         
-        String productName = "product_a";
+        String applicationName = "application_a";
         ReleaseQueueServer server = mock(ReleaseQueueServer.class);
         
         FreeStyleProject p = j.createFreeStyleProject();
-        ReleaseQueueWebHookTrigger t = new ReleaseQueueWebHookTrigger(productName, server);
+        ReleaseQueueWebHookTrigger t = new ReleaseQueueWebHookTrigger(applicationName, server);
         t.start(p, true);
         
         t = p.getTrigger(ReleaseQueueWebHookTrigger.class);
@@ -75,14 +75,14 @@ public class ReleaseQueueWebHookBuildTriggerJUnitTest {
 
         URL absoluteUrl = new URL(p.getAbsoluteUrl());
         String triggerUrl = (new URL(absoluteUrl, "rqhook/")).toString();
-        Mockito.verify(server).addWebHookSubscription(productName, triggerUrl);
+        Mockito.verify(server).addWebHookSubscription(applicationName, triggerUrl);
      
         Action action = p.getAction(ReleaseQueueWebHookAction.class);
         assertNotNull(action);
         assertEquals("rqhook", action.getUrlName());
         
         t.stop();
-        Mockito.verify(server).removeWebHookSubscription(productName, triggerUrl);
+        Mockito.verify(server).removeWebHookSubscription(applicationName, triggerUrl);
     }
     
     

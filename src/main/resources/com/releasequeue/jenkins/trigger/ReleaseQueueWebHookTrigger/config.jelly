@@ -6,7 +6,7 @@
     See global.jelly for a general discussion about jelly script.
   -->
       
-  <f:entry field="product" title="Choose Product">
+  <f:entry field="application" title="Choose Application">
     <f:select/>
   </f:entry>
 

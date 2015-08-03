@@ -148,20 +148,20 @@ public class ReleaseQueueServer implements ServerConnection{
         httpClient.getConnectionManager().shutdown();
     }    
     
-    private String getProductIdByName(String productName) throws IOException {
-        JSONArray products = listProducts();
-        String productId = null;
-        for(Object product: products){
-            if(((JSONObject)product).get("name").toString().equals(productName) ){
-                productId = ((JSONObject)product).get("id").toString();
+    private String getApplicationIdByName(String applicationName) throws IOException {
+        JSONArray applications = listApplications();
+        String applicationId = null;
+        for(Object application: applications){
+            if(((JSONObject)application).get("name").toString().equals(applicationName) ){
+                applicationId = ((JSONObject)application).get("id").toString();
                 break;
             }
         }
-        return productId;
+        return applicationId;
     }
 
-    private String getSubscriptionIdByUrl(String productId, String targetUrl) throws IOException{
-        JSONArray subscriptions = listSubscriptions(productId);
+    private String getSubscriptionIdByUrl(String applicationId, String targetUrl) throws IOException{
+        JSONArray subscriptions = listSubscriptions(applicationId);
         String subscriptionId = null;
         for (Object subscr: subscriptions){
             Object subscrTargetUrl = ((JSONObject)subscr).get("target_url");
@@ -173,39 +173,39 @@ public class ReleaseQueueServer implements ServerConnection{
         return subscriptionId;
     }
     
-    public JSONArray listProducts() throws IOException {
+    public JSONArray listApplications() throws IOException {
         if (this.userName == null){
              requestToken(email, password);
         }
-        String productsPath = String.format("%s/%s/products", this.basePath, this.userName);
-        URL productsUrl = new URL(this.serverUrl, productsPath);
+        String applicationsPath = String.format("%s/%s/applications", this.basePath, this.userName);
+        URL applicationsUrl = new URL(this.serverUrl, applicationsPath);
         
-        JSONArray products = (JSONArray)getJsonRequest(productsUrl);        
-        return products;
+        JSONArray applications = (JSONArray)getJsonRequest(applicationsUrl);        
+        return applications;
     } 
     
-    public JSONArray listSubscriptions(String productId) throws MalformedURLException, IOException {
-        String subscriptionsPath = String.format("%s/%s/products/%s/webhook_subscriptions", this.basePath, this.userName, productId);
+    public JSONArray listSubscriptions(String applicationId) throws MalformedURLException, IOException {
+        String subscriptionsPath = String.format("%s/%s/applications/%s/webhook_subscriptions", this.basePath, this.userName, applicationId);
         URL subscriptionsUrl = new URL(this.serverUrl, subscriptionsPath);
         JSONArray subscriptions = (JSONArray)getJsonRequest(subscriptionsUrl);
         return subscriptions;
     }
     
-    public void addWebHookSubscription(String productName, String targetUrl)
+    public void addWebHookSubscription(String applicationName, String targetUrl)
     throws MalformedURLException, IOException 
     {
         requestToken(email, password);
-        String productId = getProductIdByName(productName);
+        String applicationId = getApplicationIdByName(applicationName);
 
-        if (productId != null){
-            String subscriptionId = getSubscriptionIdByUrl(productId, targetUrl);
+        if (applicationId != null){
+            String subscriptionId = getSubscriptionIdByUrl(applicationId, targetUrl);
             if (subscriptionId == null){
-                String subscriptionsPath = String.format("%s/%s/products/%s/webhook_subscriptions", this.basePath, this.userName, productId);
+                String subscriptionsPath = String.format("%s/%s/applications/%s/webhook_subscriptions", this.basePath, this.userName, applicationId);
                 URL subscriptionsUrl = new URL(this.serverUrl, subscriptionsPath);
 
                 JSONObject jsonData = new JSONObject();
-                jsonData.put("event_name", "product_version.create");
-                jsonData.put("product_id", productId);
+                jsonData.put("event_name", "application_version.create");
+                jsonData.put("application_id", applicationId);
                 jsonData.put("username", this.userName);
                 jsonData.put("target_url", targetUrl);
                 jsonData.put("payload_type", "json");
@@ -216,18 +216,18 @@ public class ReleaseQueueServer implements ServerConnection{
         }
     }
 
-    public void removeWebHookSubscription(String productName, String targetUrl) throws IOException{
+    public void removeWebHookSubscription(String applicationName, String targetUrl) throws IOException{
         requestToken(email, password);
         
-        String productId = getProductIdByName(productName);
-        if (productId == null)
+        String applicationsId = getApplicationIdByName(applicationName);
+        if (applicationsId == null)
             return;
         
-        String subscriptionId = getSubscriptionIdByUrl(productId, targetUrl);        
+        String subscriptionId = getSubscriptionIdByUrl(applicationsId, targetUrl);        
         if (subscriptionId == null)
             return;
         
-        String subscriptionsPath = String.format("%s/%s/products/%s/webhook_subscriptions/%s", this.basePath, this.userName, productId, subscriptionId);
+        String subscriptionsPath = String.format("%s/%s/applications/%s/webhook_subscriptions/%s", this.basePath, this.userName, applicationsId, subscriptionId);
         URL subscriptionsUrl = new URL(this.serverUrl, subscriptionsPath);
         
         deleteRequest(subscriptionsUrl);
