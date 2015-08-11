@@ -75,14 +75,15 @@ public class ReleaseQueueWebHookBuildTriggerJUnitTest {
 
         URL absoluteUrl = new URL(p.getAbsoluteUrl());
         String triggerUrl = (new URL(absoluteUrl, "rqhook/")).toString();
-        Mockito.verify(server).addWebHookSubscription(applicationName, triggerUrl);
+        String webhookName = "jenkins_" + p.getFullName();
+        Mockito.verify(server).addWebHookSubscription(applicationName, webhookName, triggerUrl);
      
         Action action = p.getAction(ReleaseQueueWebHookAction.class);
         assertNotNull(action);
         assertEquals("rqhook", action.getUrlName());
         
         t.stop();
-        Mockito.verify(server).removeWebHookSubscription(applicationName, triggerUrl);
+        Mockito.verify(server).removeWebHookSubscription(applicationName, webhookName);
     }
     
     

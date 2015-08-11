@@ -147,87 +147,51 @@ public class ReleaseQueueServer implements ServerConnection{
         HttpResponse response = httpClient.execute(request);
         httpClient.getConnectionManager().shutdown();
     }    
-    
-    private String getApplicationIdByName(String applicationName) throws IOException {
-        JSONArray applications = listApplications();
-        String applicationId = null;
-        for(Object application: applications){
-            if(((JSONObject)application).get("name").toString().equals(applicationName) ){
-                applicationId = ((JSONObject)application).get("id").toString();
-                break;
-            }
-        }
-        return applicationId;
-    }
-
-    private String getSubscriptionIdByUrl(String applicationId, String targetUrl) throws IOException{
-        JSONArray subscriptions = listSubscriptions(applicationId);
-        String subscriptionId = null;
-        for (Object subscr: subscriptions){
-            Object subscrTargetUrl = ((JSONObject)subscr).get("target_url");
-            if (subscrTargetUrl != null && subscrTargetUrl.toString().equals(targetUrl)){
-                subscriptionId = ((JSONObject)subscr).get("id").toString();
-                break;
-            }
-        }
-        return subscriptionId;
-    }
-    
+        
     public JSONArray listApplications() throws IOException {
         if (this.userName == null){
              requestToken(email, password);
         }
         String applicationsPath = String.format("%s/%s/applications", this.basePath, this.userName);
         URL applicationsUrl = new URL(this.serverUrl, applicationsPath);
-        
-        JSONArray applications = (JSONArray)getJsonRequest(applicationsUrl);        
+
+        JSONObject res = (JSONObject)((JSONObject)getJsonRequest(applicationsUrl)).get("_embedded");
+        JSONArray applications = (JSONArray)(res.get("applications"));
+
         return applications;
     } 
     
-    public JSONArray listSubscriptions(String applicationId) throws MalformedURLException, IOException {
-        String subscriptionsPath = String.format("%s/%s/applications/%s/webhook_subscriptions", this.basePath, this.userName, applicationId);
+    public JSONArray listSubscriptions(String applicationName) throws MalformedURLException, IOException {
+        String subscriptionsPath = String.format("%s/%s/applications/%s/webhook_subscriptions", this.basePath, this.userName, applicationName);
         URL subscriptionsUrl = new URL(this.serverUrl, subscriptionsPath);
         JSONArray subscriptions = (JSONArray)getJsonRequest(subscriptionsUrl);
         return subscriptions;
     }
     
-    public void addWebHookSubscription(String applicationName, String targetUrl)
+    public void addWebHookSubscription(String applicationName, String webhookName, String targetUrl)
     throws MalformedURLException, IOException 
     {
         requestToken(email, password);
-        String applicationId = getApplicationIdByName(applicationName);
 
-        if (applicationId != null){
-            String subscriptionId = getSubscriptionIdByUrl(applicationId, targetUrl);
-            if (subscriptionId == null){
-                String subscriptionsPath = String.format("%s/%s/applications/%s/webhook_subscriptions", this.basePath, this.userName, applicationId);
-                URL subscriptionsUrl = new URL(this.serverUrl, subscriptionsPath);
+        String subscriptionsPath = String.format("%s/%s/applications/%s/webhook_subscriptions", this.basePath, this.userName, applicationName);
+        URL subscriptionsUrl = new URL(this.serverUrl, subscriptionsPath);
 
-                JSONObject jsonData = new JSONObject();
-                jsonData.put("event_name", "application_version.create");
-                jsonData.put("application_id", applicationId);
-                jsonData.put("username", this.userName);
-                jsonData.put("target_url", targetUrl);
-                jsonData.put("payload_type", "json");
-                
-                postJsonRequest(subscriptionsUrl, jsonData);
-            }
-            
-        }
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("event_name", "application_version.create");
+        jsonData.put("application_id", applicationName);
+        jsonData.put("username", this.userName);
+        jsonData.put("name", webhookName);
+        jsonData.put("target_url", targetUrl);
+        jsonData.put("payload_type", "json");
+
+        postJsonRequest(subscriptionsUrl, jsonData);
+
     }
 
-    public void removeWebHookSubscription(String applicationName, String targetUrl) throws IOException{
+    public void removeWebHookSubscription(String applicationName, String webhookName) throws IOException{
         requestToken(email, password);
-        
-        String applicationsId = getApplicationIdByName(applicationName);
-        if (applicationsId == null)
-            return;
-        
-        String subscriptionId = getSubscriptionIdByUrl(applicationsId, targetUrl);        
-        if (subscriptionId == null)
-            return;
-        
-        String subscriptionsPath = String.format("%s/%s/applications/%s/webhook_subscriptions/%s", this.basePath, this.userName, applicationsId, subscriptionId);
+                
+        String subscriptionsPath = String.format("%s/%s/applications/%s/webhook_subscriptions/%s", this.basePath, this.userName, applicationName, webhookName);
         URL subscriptionsUrl = new URL(this.serverUrl, subscriptionsPath);
         
         deleteRequest(subscriptionsUrl);

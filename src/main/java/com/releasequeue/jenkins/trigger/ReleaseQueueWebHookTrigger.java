@@ -35,6 +35,7 @@ import org.kohsuke.stapler.QueryParameter;
 public class ReleaseQueueWebHookTrigger extends Trigger<AbstractProject<?, ?>> {
     private String application;
     private URL triggerUrl;
+    private String webhookName;
     private ServerConnection server;
     
     public ReleaseQueueWebHookTrigger(String application, ServerConnection server) throws Exception {
@@ -75,8 +76,8 @@ public class ReleaseQueueWebHookTrigger extends Trigger<AbstractProject<?, ?>> {
                        password = globalDescriptor.getPassword();
                 if (serverUrl != null && email != null && password != null)
                     server.setCredentials(serverUrl, email, password);
-                
-                server.addWebHookSubscription(application, triggerUrl.toString());
+                webhookName = "jenkins_" + project.getFullName();
+                server.addWebHookSubscription(application, webhookName, triggerUrl.toString());
                 
                 project.addTrigger(this);
                 
@@ -93,8 +94,8 @@ public class ReleaseQueueWebHookTrigger extends Trigger<AbstractProject<?, ?>> {
     @Override
     public void stop(){
         try{
-            if(application != null && triggerUrl != null){
-                server.removeWebHookSubscription(application, triggerUrl.toString());
+            if(application != null && webhookName != null){
+                server.removeWebHookSubscription(application, webhookName);
             }
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
