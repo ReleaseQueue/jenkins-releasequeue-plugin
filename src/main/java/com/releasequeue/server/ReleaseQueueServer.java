@@ -162,7 +162,7 @@ public class ReleaseQueueServer implements ServerConnection{
     } 
     
     public JSONArray listSubscriptions(String applicationName) throws MalformedURLException, IOException {
-        String subscriptionsPath = String.format("%s/%s/applications/%s/webhook_subscriptions", this.basePath, this.userName, applicationName);
+        String subscriptionsPath = String.format("%s/%s/applications/%s/webhooks", this.basePath, this.userName, applicationName);
         URL subscriptionsUrl = new URL(this.serverUrl, subscriptionsPath);
         JSONArray subscriptions = (JSONArray)getJsonRequest(subscriptionsUrl);
         return subscriptions;
@@ -173,7 +173,7 @@ public class ReleaseQueueServer implements ServerConnection{
     {
         requestToken(email, password);
 
-        String subscriptionsPath = String.format("%s/%s/applications/%s/webhook_subscriptions", this.basePath, this.userName, applicationName);
+        String subscriptionsPath = String.format("%s/%s/applications/%s/webhooks", this.basePath, this.userName, applicationName);
         URL subscriptionsUrl = new URL(this.serverUrl, subscriptionsPath);
 
         JSONObject jsonData = new JSONObject();
@@ -191,7 +191,7 @@ public class ReleaseQueueServer implements ServerConnection{
     public void removeWebHookSubscription(String applicationName, String webhookName) throws IOException{
         requestToken(email, password);
                 
-        String subscriptionsPath = String.format("%s/%s/applications/%s/webhook_subscriptions/%s", this.basePath, this.userName, applicationName, webhookName);
+        String subscriptionsPath = String.format("%s/%s/applications/%s/webhooks/%s", this.basePath, this.userName, applicationName, webhookName);
         URL subscriptionsUrl = new URL(this.serverUrl, subscriptionsPath);
         
         deleteRequest(subscriptionsUrl);
