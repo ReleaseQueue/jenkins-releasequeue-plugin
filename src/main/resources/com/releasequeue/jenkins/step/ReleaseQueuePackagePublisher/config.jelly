@@ -14,9 +14,9 @@
   <f:entry title="Component" field="component">
     <f:textbox />
   </f:entry>
-    
+
   <f:entry title="Build artifacts pattern" field="artifactsPattern">
     <f:textbox />
-  </f:entry>    
-  
+  </f:entry>
+
 </j:jelly>

@@ -5,10 +5,13 @@
 
     See global.jelly for a general discussion about jelly script.
   -->
-      
+
   <f:entry field="application" title="Choose Application">
     <f:select/>
   </f:entry>
 
-  
+  <f:entry field="event" title="Choose Event">
+    <f:select/>
+  </f:entry>
+
 </j:jelly>

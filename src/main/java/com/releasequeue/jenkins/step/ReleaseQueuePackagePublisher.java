@@ -32,16 +32,16 @@ public class ReleaseQueuePackagePublisher extends Notifier {
     private final String artifactsPattern;
     private ServerConnection server;
 
-    public ReleaseQueuePackagePublisher(String distribution, 
-            String component, 
-            String artifactsPattern, 
+    public ReleaseQueuePackagePublisher(String distribution,
+            String component,
+            String artifactsPattern,
             ServerConnection rqserver){
         this.distribution = distribution;
         this.component = component;
         this.artifactsPattern = artifactsPattern;
         this.server = rqserver;
     }
-    
+
     @DataBoundConstructor
     public ReleaseQueuePackagePublisher(String distribution, String component, String artifactsPattern) {
         this(distribution, component, artifactsPattern, ConnectionManager.getConnection());
@@ -50,19 +50,19 @@ public class ReleaseQueuePackagePublisher extends Notifier {
     public String getDistribution(){
         return this.distribution;
     }
-    
+
     public String getComponent(){
         return this.component;
     }
-    
+
     public String getArtifactsPattern(){
         return this.artifactsPattern;
     }
-    
+
     @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
-    
+
     @Override
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.BUILD;
@@ -79,25 +79,25 @@ public class ReleaseQueuePackagePublisher extends Notifier {
     public DescriptorImpl getDescriptor() {
         return (DescriptorImpl)super.getDescriptor();
     }
-    
+
     @Override
-    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) 
+    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
             throws InterruptedException, IOException {
-         
+
         Result buildResult = build.getResult();
         if (buildResult == Result.FAILURE || buildResult == Result.ABORTED) {
             return true;
-        } 
-        
-        ReleaseQueueGlobalDescriptor.DescriptorImpl globalDescriptor = 
-            (ReleaseQueueGlobalDescriptor.DescriptorImpl)Jenkins.getInstance().getDescriptor(ReleaseQueueGlobalDescriptor.class);                      
+        }
+
+        ReleaseQueueGlobalDescriptor.DescriptorImpl globalDescriptor =
+            (ReleaseQueueGlobalDescriptor.DescriptorImpl)Jenkins.getInstance().getDescriptor(ReleaseQueueGlobalDescriptor.class);
         server.setCredentials(globalDescriptor.getServerUrl(), globalDescriptor.getEmail(), globalDescriptor.getPassword());
-        
+
         FilePath workspace = build.getWorkspace();
 
         FilePath[] packages = workspace.list(getArtifactsPattern());
         log(listener, String.format("Found files: %d", packages.length));
-        
+
         for(FilePath pkg: packages){
             log(listener, String.format("Uploading: %s", pkg.toString()));
             HttpResponse response = server.uploadPackage(pkg, getDistribution(), getComponent());
@@ -133,11 +133,11 @@ public class ReleaseQueuePackagePublisher extends Notifier {
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return true;
         }
-        
+
         private boolean checkGlobalConfig(){
-            ReleaseQueueGlobalDescriptor.DescriptorImpl globalDescriptor = 
-                (ReleaseQueueGlobalDescriptor.DescriptorImpl)Jenkins.getInstance().getDescriptor(ReleaseQueueGlobalDescriptor.class);               
-            
+            ReleaseQueueGlobalDescriptor.DescriptorImpl globalDescriptor =
+                (ReleaseQueueGlobalDescriptor.DescriptorImpl)Jenkins.getInstance().getDescriptor(ReleaseQueueGlobalDescriptor.class);
+
             String serverUrl = globalDescriptor.getServerUrl(),
                    email = globalDescriptor.getEmail(),
                    password = globalDescriptor.getPassword();
@@ -147,12 +147,12 @@ public class ReleaseQueuePackagePublisher extends Notifier {
                     password != null && !password.isEmpty();
 
         }
-        
+
         private FormValidation missingGlobalConfig(){
-            return FormValidation.error("Missing global configuration." + 
-                "Go to 'Config System' and fill in email and user");                                
-        }            
-        
+            return FormValidation.error("Missing global configuration." +
+                "Go to 'Config System' and fill in email and user");
+        }
+
         public FormValidation doCheckDistribution(@QueryParameter String value) {
                 if (checkGlobalConfig()){
                     if (value == null || value.isEmpty())
@@ -162,7 +162,7 @@ public class ReleaseQueuePackagePublisher extends Notifier {
                 }
                 else{
                     return missingGlobalConfig();
-                }          
+                }
         }
 
         public FormValidation doCheckComponent(@QueryParameter String value) {
@@ -174,7 +174,7 @@ public class ReleaseQueuePackagePublisher extends Notifier {
                 }
                 else{
                     return missingGlobalConfig();
-                }          
+                }
         }
 
         public FormValidation doCheckArtifactsPattern(@QueryParameter String value) {
@@ -186,11 +186,11 @@ public class ReleaseQueuePackagePublisher extends Notifier {
                 }
                 else{
                     return missingGlobalConfig();
-                }          
+                }
         }
-        
-        
-        
+
+
+
     }
-    
+
 }

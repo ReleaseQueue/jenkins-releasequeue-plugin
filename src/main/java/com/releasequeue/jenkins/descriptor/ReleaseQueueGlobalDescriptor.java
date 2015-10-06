@@ -19,7 +19,7 @@ public class ReleaseQueueGlobalDescriptor extends JobProperty<Job<?, ?>>{
     public DescriptorImpl getDescriptor() {
         return (DescriptorImpl)Jenkins.getInstance().getDescriptor(getClass());
     }
-    
+
     @Extension
     public static final class DescriptorImpl extends JobPropertyDescriptor {
 
@@ -66,7 +66,7 @@ public class ReleaseQueueGlobalDescriptor extends JobProperty<Job<?, ?>>{
                 return FormValidation.error("Fill in all fields");
             }
         }
-        
+
         public String getServerUrl(){
             return serverUrl;
         }

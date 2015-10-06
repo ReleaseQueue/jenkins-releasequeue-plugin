@@ -31,32 +31,32 @@ import org.mockito.MockitoAnnotations;
  */
 
 public class ReleaseQueuePackagePublisherJUnitTest{
-    
+
     public ReleaseQueuePackagePublisherJUnitTest() {
     }
-    
+
     @BeforeClass
     public static void setUpClass() {
     }
-    
+
     @AfterClass
     public static void tearDownClass() {
     }
-    
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
     }
-    
+
     @After
     public void tearDown() {
     }
 
-    @Rule 
+    @Rule
     public JenkinsRule j = new JenkinsRule();
-    
+
     @Test
-    public void test_package_uploaded() 
+    public void test_package_uploaded()
     throws Exception, InterruptedException, IOException, ExecutionException
     {
         String dist = "dist";
@@ -64,22 +64,22 @@ public class ReleaseQueuePackagePublisherJUnitTest{
         String pattern = "*.deb";
         FreeStyleProject project = j.createFreeStyleProject();
         ReleaseQueueServer server = mock(ReleaseQueueServer.class);
-        
+
         ReleaseQueuePackagePublisher testPublisher = new ReleaseQueuePackagePublisher(dist, comp, pattern, server);
         project.getPublishersList().add(testPublisher);
-        
+
         FilePath ws = j.jenkins.getWorkspaceFor(project);
         ws.mkdirs();
         FilePath pkg = new FilePath(new File(ws.toString() + "/test.deb"));
         pkg.touch(0);
-        
+
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         j.assertBuildStatus(Result.SUCCESS, build);
         Mockito.verify(server).uploadPackage(pkg, dist, comp);
     }
-    
+
     @Test
-    public void test_with_no_package() 
+    public void test_with_no_package()
     throws Exception, InterruptedException, IOException, ExecutionException
     {
         String dist = "dist";
@@ -87,16 +87,16 @@ public class ReleaseQueuePackagePublisherJUnitTest{
         String pattern = "*.deb";
         FreeStyleProject project = j.createFreeStyleProject();
         ReleaseQueueServer server = mock(ReleaseQueueServer.class);
-        
+
         ReleaseQueuePackagePublisher testPublisher = new ReleaseQueuePackagePublisher(dist, comp, pattern, server);
         project.getPublishersList().add(testPublisher);
-                
+
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         j.assertBuildStatus(Result.SUCCESS, build);
     }
-    
+
     @Test
-    public void test_specific_package_uploaded() 
+    public void test_specific_package_uploaded()
     throws Exception, InterruptedException, IOException, ExecutionException
     {
         String dist = "dist";
@@ -104,22 +104,22 @@ public class ReleaseQueuePackagePublisherJUnitTest{
         String pattern = "test.deb";
         FreeStyleProject project = j.createFreeStyleProject();
         ReleaseQueueServer server = mock(ReleaseQueueServer.class);
-       
+
         ReleaseQueuePackagePublisher testPublisher = new ReleaseQueuePackagePublisher(dist, comp, pattern, server);
         project.getPublishersList().add(testPublisher);
-        
+
         FilePath ws = j.jenkins.getWorkspaceFor(project);
         ws.mkdirs();
         FilePath pkg1 = new FilePath(new File(ws.toString() + "/test.deb"));
         pkg1.touch(0);
         FilePath pkg2 = new FilePath(new File(ws.toString() + "/dont.deb"));
         pkg2.touch(0);
-        
+
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         j.assertBuildStatus(Result.SUCCESS, build);
         Mockito.verify(server).uploadPackage(pkg1, dist, comp);
         Mockito.verify(server, times(0)).uploadPackage(pkg2, dist, comp);
     }
-    
-    
+
+
 }

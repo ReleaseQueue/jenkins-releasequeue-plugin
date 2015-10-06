@@ -21,7 +21,7 @@ import java.util.Collection;
  */
 @Extension
 public class ReleaseQueueTransientProjectActionFactory extends TransientProjectActionFactory{
-    
+
     @Override
      public Collection<? extends Action> createFor(AbstractProject target){
          Trigger trigger = target.getTrigger(ReleaseQueueWebHookTrigger.class);
@@ -30,7 +30,7 @@ public class ReleaseQueueTransientProjectActionFactory extends TransientProjectA
              ta.add(new ReleaseQueueWebHookAction());
              return ta;
          }
-         
+
          return null;
      }
 }

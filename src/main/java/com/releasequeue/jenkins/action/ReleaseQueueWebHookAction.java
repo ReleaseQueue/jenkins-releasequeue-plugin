@@ -44,23 +44,23 @@ public class ReleaseQueueWebHookAction implements Action {
     public String getDisplayName() {
         return null;
     }
-    
+
     public String getUrlName() {
         return URL;
     }
-    
+
     private static final Logger LOGGER =  Logger.getLogger(ReleaseQueueWebHookAction.class.getName());
-       
-    public void doIndex(StaplerRequest req, StaplerResponse resp) throws Exception {       
+
+    public void doIndex(StaplerRequest req, StaplerResponse resp) throws Exception {
         List<Ancestor> ancestors = req.getAncestors();
-        AbstractProject project = (AbstractProject)ancestors.get(ancestors.size() - 2).getObject();       
-        
+        AbstractProject project = (AbstractProject)ancestors.get(ancestors.size() - 2).getObject();
+
         byte[] data      = new byte[req.getContentLength()];
         ServletInputStream inputStream = req.getInputStream();
         inputStream.read(data);
         JSONParser parser = new JSONParser();
         JSONObject jsonObj = JSONObject.fromObject(parser.parse(new String(data)));
-        
+
         List<ParameterValue> values = new ArrayList<ParameterValue>();
         ParametersDefinitionProperty property = (ParametersDefinitionProperty)project.getProperty(ParametersDefinitionProperty.class);
 
@@ -90,9 +90,9 @@ public class ReleaseQueueWebHookAction implements Action {
                 values.add(parameterValue);
             }
         }
-        
+
         Jenkins.getInstance().getQueue().schedule(project, 0, new ParametersAction(values), new CauseAction(new ReleaseQueueBuildCause()));
     }
 
-    
+
 }

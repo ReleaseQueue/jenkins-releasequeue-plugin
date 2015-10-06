@@ -19,25 +19,25 @@ import jenkins.model.Jenkins;
  */
 public class ConnectionManager {
     public static ServerConnection getConnection(){
-        ReleaseQueueGlobalDescriptor.DescriptorImpl globalDescriptor = 
+        ReleaseQueueGlobalDescriptor.DescriptorImpl globalDescriptor =
                 (ReleaseQueueGlobalDescriptor.DescriptorImpl)Jenkins.getInstance().getDescriptor(ReleaseQueueGlobalDescriptor.class);
-        
+
         String serverUrl = globalDescriptor.getServerUrl(),
                email = globalDescriptor.getEmail(),
                password = globalDescriptor.getPassword();
-        
+
         ReleaseQueueServer server = null;
         try{
             server = new ReleaseQueueServer(serverUrl, email, password);
         }
         catch(MalformedURLException e){
-            throw new RuntimeException(e); 
+            throw new RuntimeException(e);
         }
         catch(IOException e){
-            throw new RuntimeException(e); 
+            throw new RuntimeException(e);
         }
 
         return server;
     }
-    
+
 }

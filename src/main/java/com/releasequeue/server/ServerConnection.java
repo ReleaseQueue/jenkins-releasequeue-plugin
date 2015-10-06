@@ -22,7 +22,7 @@ public interface ServerConnection {
     public HttpResponse uploadPackage(FilePath packagePath, String distribution, String component) throws MalformedURLException, IOException;
     public JSONArray listApplications() throws IOException;
     public JSONArray listSubscriptions(String applicationName) throws MalformedURLException, IOException;
-    public void addWebHookSubscription(String applicationName, String webhookName, String targetUrl) throws MalformedURLException, IOException;
+    public JSONArray listSupportedEvents() throws MalformedURLException, IOException;
+    public void addWebHookSubscription(String applicationName, String event, String webhookName, String targetUrl) throws MalformedURLException, IOException;
     public void removeWebHookSubscription(String applicationName, String webhookName) throws IOException;
-    
 }

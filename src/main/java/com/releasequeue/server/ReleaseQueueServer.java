@@ -34,8 +34,8 @@ public class ReleaseQueueServer implements ServerConnection{
     private String password;
     private String token;
     private String userName;
-    
-    public ReleaseQueueServer(String serverUrl, String email, String password) 
+
+    public ReleaseQueueServer(String serverUrl, String email, String password)
             throws MalformedURLException, IOException{
         setCredentials(serverUrl, email, password);
     }
@@ -46,8 +46,8 @@ public class ReleaseQueueServer implements ServerConnection{
         this.password = password;
         this.serverUrl = serverUrl != null ? new URL(serverUrl) : null;
     }
-    
-    private void requestToken(String email, String password) throws IOException{       
+
+    private void requestToken(String email, String password) throws IOException{
         URL signInUrl = new URL(this.serverUrl, this.signInPath);
         HttpPost request = new HttpPost(signInUrl.toString());
 
@@ -55,19 +55,21 @@ public class ReleaseQueueServer implements ServerConnection{
         jsonData.put("email", email);
         jsonData.put("password", password);
 
-        JSONObject rezObj = (JSONObject)postJsonRequest(signInUrl, jsonData);
-        this.token = rezObj.get("token").toString();
-        this.userName = rezObj.get("username").toString();
+        JSONObject resObj = (JSONObject)postJsonRequest(signInUrl, jsonData);
+        if (resObj != null){
+            this.token = resObj.get("token").toString();
+            this.userName = resObj.get("username").toString();
+        }
     }
-    
+
     public HttpResponse uploadPackage(FilePath packagePath, String distribution, String component)
         throws MalformedURLException, IOException {
         requestToken(email, password);
         String repoType = FilenameUtils.getExtension(packagePath.toString());
-        
+
         String uploadPath = String.format("%s/%s/repositories/%s/packages?distribution=%s&component=%s", this.basePath, this.userName, repoType, distribution, component);
         URL uploadPackageUrl = new URL(this.serverUrl, uploadPath);
-        
+
         CloseableHttpClient httpClient = HttpClients.createDefault();
         HttpPost uploadFile = new HttpPost(uploadPackageUrl.toString());
         uploadFile.addHeader("x-auth-token", this.token);
@@ -81,42 +83,46 @@ public class ReleaseQueueServer implements ServerConnection{
         HttpResponse response = httpClient.execute(uploadFile);
         return response;
     }
-    
+
     private Object postJsonRequest(URL url, JSONObject payload) throws IOException{
         HttpPost request = new HttpPost(url.toString());
         request.addHeader("x-auth-token", this.token);
-               
+
         CloseableHttpClient httpClient = HttpClients.createDefault();
 
         try{
-            
             StringWriter data = new StringWriter();
-            payload.writeJSONString(data);           
-            
+            payload.writeJSONString(data);
+
             StringEntity params = new StringEntity(data.toString());
             request.addHeader("content-type", "application/json");
-            request.setEntity(params);                        
-            
-            HttpResponse response = httpClient.execute(request);
+            request.setEntity(params);
 
+            HttpResponse response = httpClient.execute(request);
+            StatusLine statusLine = response.getStatusLine();
+            int statusCode = statusLine.getStatusCode();
+            if (statusCode == 401)
+                throw new RuntimeException("Authorization failure");
             String json_string = EntityUtils.toString(response.getEntity());
             JSONParser parser = new JSONParser();
 
             return parser.parse(json_string);
         }
         catch(ParseException pe){
-            throw new RuntimeException("Failed to parse json responce", pe); 
+            throw new RuntimeException("Failed to parse json responce", pe);
         }
         finally {
             httpClient.getConnectionManager().shutdown();
         }
-        
+
     }
-    
+
     private Object getJsonRequest(URL url) throws IOException{
+        requestToken(email, password);
+
         HttpGet request = new HttpGet(url.toString());
         request.addHeader("x-auth-token", this.token);
-               
+
         CloseableHttpClient httpClient = HttpClients.createDefault();
 
         try{
@@ -130,28 +136,30 @@ public class ReleaseQueueServer implements ServerConnection{
             }
         }
         catch(ParseException pe){
-            throw new RuntimeException("Failed to parse json responce", pe); 
+            throw new RuntimeException("Failed to parse json responce", pe);
         }
         finally {
             httpClient.getConnectionManager().shutdown();
-        }        
+        }
         return null;
     }
-    
+
     private void deleteRequest(URL url) throws IOException{
+        requestToken(email, password);
+
         HttpDelete request = new HttpDelete(url.toString());
         request.addHeader("x-auth-token", this.token);
-               
+
         CloseableHttpClient httpClient = HttpClients.createDefault();
 
         HttpResponse response = httpClient.execute(request);
         httpClient.getConnectionManager().shutdown();
-    }    
-        
+    }
+
     public JSONArray listApplications() throws IOException {
-        if (this.userName == null){
-             requestToken(email, password);
-        }
+        if (userName == null)
+            requestToken(email, password);
+
         String applicationsPath = String.format("%s/%s/applications", this.basePath, this.userName);
         URL applicationsUrl = new URL(this.serverUrl, applicationsPath);
 
@@ -159,17 +167,28 @@ public class ReleaseQueueServer implements ServerConnection{
         JSONArray applications = (JSONArray)(res.get("applications"));
 
         return applications;
-    } 
-    
+    }
+
     public JSONArray listSubscriptions(String applicationName) throws MalformedURLException, IOException {
+        if (userName == null)
+            requestToken(email, password);
         String subscriptionsPath = String.format("%s/%s/applications/%s/webhooks", this.basePath, this.userName, applicationName);
         URL subscriptionsUrl = new URL(this.serverUrl, subscriptionsPath);
         JSONArray subscriptions = (JSONArray)getJsonRequest(subscriptionsUrl);
         return subscriptions;
     }
-    
-    public void addWebHookSubscription(String applicationName, String webhookName, String targetUrl)
-    throws MalformedURLException, IOException 
+
+    public JSONArray listSupportedEvents() throws MalformedURLException, IOException {
+        String webhookEventsPath = "features/webhooks";
+        URL webhooksEventsUrl = new URL(this.serverUrl, webhookEventsPath);
+        JSONObject result = (JSONObject)getJsonRequest(webhooksEventsUrl);
+        JSONObject embedded = (JSONObject)result.get("_embedded");
+        JSONArray eventNames = (JSONArray)embedded.get("webhooks");
+        return eventNames;
+    }
+
+    public void addWebHookSubscription(String applicationName, String event, String webhookName, String targetUrl)
+    throws MalformedURLException, IOException
     {
         requestToken(email, password);
 
@@ -177,7 +196,7 @@ public class ReleaseQueueServer implements ServerConnection{
         URL subscriptionsUrl = new URL(this.serverUrl, subscriptionsPath);
 
         JSONObject jsonData = new JSONObject();
-        jsonData.put("event_name", "application_version.create");
+        jsonData.put("event_name", event);
         jsonData.put("application_id", applicationName);
         jsonData.put("username", this.userName);
         jsonData.put("name", webhookName);
@@ -185,16 +204,15 @@ public class ReleaseQueueServer implements ServerConnection{
         jsonData.put("payload_type", "json");
 
         postJsonRequest(subscriptionsUrl, jsonData);
-
     }
 
     public void removeWebHookSubscription(String applicationName, String webhookName) throws IOException{
-        requestToken(email, password);
-                
+        if (userName == null)
+            requestToken(email, password);
         String subscriptionsPath = String.format("%s/%s/applications/%s/webhooks/%s", this.basePath, this.userName, applicationName, webhookName);
         URL subscriptionsUrl = new URL(this.serverUrl, subscriptionsPath);
-        
+
         deleteRequest(subscriptionsUrl);
     }
-    
+
 }
