@@ -23,12 +23,12 @@ public class ConnectionManager {
                 (ReleaseQueueGlobalDescriptor.DescriptorImpl)Jenkins.getInstance().getDescriptor(ReleaseQueueGlobalDescriptor.class);
 
         String serverUrl = globalDescriptor.getServerUrl(),
-               email = globalDescriptor.getEmail(),
-               password = globalDescriptor.getPassword();
+               userName = globalDescriptor.getUserName(),
+               apiKey = globalDescriptor.getApiKey();
 
         ReleaseQueueServer server = null;
         try{
-            server = new ReleaseQueueServer(serverUrl, email, password);
+            server = new ReleaseQueueServer(serverUrl, userName, apiKey);
         }
         catch(MalformedURLException e){
             throw new RuntimeException(e);

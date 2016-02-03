@@ -87,5 +87,4 @@ public class ReleaseQueueWebHookBuildTriggerJUnitTest {
         Mockito.verify(server).removeWebHookSubscription(applicationName, webhookName);
     }
 
-
 }

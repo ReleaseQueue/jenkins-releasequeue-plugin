@@ -18,7 +18,7 @@ import org.json.simple.JSONArray;
  */
 public interface ServerConnection {
 
-    public void setCredentials(String serverUrl, String email, String password) throws MalformedURLException;
+    public void setCredentials(String serverUrl, String userName, String apiKey) throws MalformedURLException;
     public HttpResponse uploadPackage(FilePath packagePath, String distribution, String component) throws MalformedURLException, IOException;
     public JSONArray listApplications() throws IOException;
     public JSONArray listSubscriptions(String applicationName) throws MalformedURLException, IOException;

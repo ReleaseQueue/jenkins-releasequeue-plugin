@@ -24,8 +24,8 @@ public class ReleaseQueueGlobalDescriptor extends JobProperty<Job<?, ?>>{
     public static final class DescriptorImpl extends JobPropertyDescriptor {
 
         private String serverUrl;
-        private String email;
-        private String password;
+        private String userName;
+        private String apiKey;
 
         public DescriptorImpl() {
             super(ReleaseQueueGlobalDescriptor.class);
@@ -43,19 +43,19 @@ public class ReleaseQueueGlobalDescriptor extends JobProperty<Job<?, ?>>{
             // To persist global configuration information,
             // set that to properties and call save().
             serverUrl = formData.getString("serverUrl");
-            email = formData.getString("email");
-            password = formData.getString("password");
+            userName = formData.getString("userName");
+            apiKey = formData.getString("apiKey");
             save();
             return super.configure(req, formData);
         }
 
-        public FormValidation doCheckServerUrl(@QueryParameter String serverUrl, @QueryParameter String email, @QueryParameter String password){
+        public FormValidation doCheckServerUrl(@QueryParameter String serverUrl, @QueryParameter String userName, @QueryParameter String apiKey){
             if (serverUrl != null && !serverUrl.isEmpty() &&
-                email != null && !email.isEmpty() &&
-                password != null && !password.isEmpty()){
+                userName != null && !userName.isEmpty() &&
+                apiKey != null && !apiKey.isEmpty()){
 
                 try{
-                    ReleaseQueueServer server = new ReleaseQueueServer(serverUrl, email, password);
+                    ReleaseQueueServer server = new ReleaseQueueServer(serverUrl, userName, apiKey);
                     return FormValidation.ok();
                 }
                 catch(Exception ex){
@@ -71,13 +71,23 @@ public class ReleaseQueueGlobalDescriptor extends JobProperty<Job<?, ?>>{
             return serverUrl;
         }
 
-        public String getEmail(){
-            return email;
+        public String getUserName(){
+            return userName;
         }
 
-        public String getPassword(){
-            return password;
+        public String getApiKey(){
+            return apiKey;
         }
 
+        public boolean isValid(){
+            return serverUrl != null && !serverUrl.isEmpty() &&
+                userName != null && !userName.isEmpty() &&
+                apiKey != null && !apiKey.isEmpty();
+        }
+        
+        public String defaultServerUrl(){
+            return "https://api.releasequeue.com";
+        }
+        
     }
 }

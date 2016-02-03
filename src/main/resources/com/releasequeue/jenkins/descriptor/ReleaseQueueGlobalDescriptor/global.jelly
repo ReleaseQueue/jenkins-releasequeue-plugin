@@ -14,12 +14,12 @@
   -->
   <f:section title="ReleaseQueue Package Publisher Config">
     <f:entry title="Server Url" field="serverUrl">
+      <f:textbox default="${descriptor.defaultServerUrl()}" />
+    </f:entry>
+    <f:entry title="User Name" field="userName">
       <f:textbox />
     </f:entry>
-    <f:entry title="Email" field="email">
-      <f:textbox />
-    </f:entry>
-    <f:entry title="Password" field="password">
+    <f:entry title="Api Key" field="apiKey">
       <f:password />
     </f:entry>
   </f:section>

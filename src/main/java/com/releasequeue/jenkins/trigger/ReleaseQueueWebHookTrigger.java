@@ -73,10 +73,12 @@ public class ReleaseQueueWebHookTrigger extends Trigger<AbstractProject<?, ?>> {
                 ReleaseQueueGlobalDescriptor.DescriptorImpl globalDescriptor =
                     (ReleaseQueueGlobalDescriptor.DescriptorImpl)Jenkins.getInstance().getDescriptor(ReleaseQueueGlobalDescriptor.class);
                 String serverUrl = globalDescriptor.getServerUrl(),
-                       email = globalDescriptor.getEmail(),
-                       password = globalDescriptor.getPassword();
-                if (serverUrl != null && email != null && password != null)
-                    server.setCredentials(serverUrl, email, password);
+                       userName = globalDescriptor.getUserName(),
+                       apiKey = globalDescriptor.getApiKey();
+                
+                if (serverUrl != null && userName != null && apiKey != null)
+                    server.setCredentials(serverUrl, userName, apiKey);
+                
                 webhookName = "jenkins_" + project.getFullName();
                 server.addWebHookSubscription(application, event, webhookName, triggerUrl.toString());
 
@@ -121,15 +123,9 @@ public class ReleaseQueueWebHookTrigger extends Trigger<AbstractProject<?, ?>> {
             ReleaseQueueGlobalDescriptor.DescriptorImpl globalDescriptor =
                 (ReleaseQueueGlobalDescriptor.DescriptorImpl)Jenkins.getInstance().getDescriptor(ReleaseQueueGlobalDescriptor.class);
 
-            String serverUrl = globalDescriptor.getServerUrl(),
-                   email = globalDescriptor.getEmail(),
-                   password = globalDescriptor.getPassword();
-
             ListBoxModel items = new ListBoxModel();
 
-            if (serverUrl != null && !serverUrl.isEmpty() &&
-                email != null && !email.isEmpty() &&
-                password != null && !password.isEmpty()){
+            if (globalDescriptor.isValid()){
 
                 try{
                     ServerConnection server = ConnectionManager.getConnection();
@@ -152,13 +148,7 @@ public class ReleaseQueueWebHookTrigger extends Trigger<AbstractProject<?, ?>> {
             ReleaseQueueGlobalDescriptor.DescriptorImpl globalDescriptor =
                 (ReleaseQueueGlobalDescriptor.DescriptorImpl)Jenkins.getInstance().getDescriptor(ReleaseQueueGlobalDescriptor.class);
 
-            String serverUrl = globalDescriptor.getServerUrl(),
-                   email = globalDescriptor.getEmail(),
-                   password = globalDescriptor.getPassword();
-
-            if (serverUrl != null && !serverUrl.isEmpty() &&
-                email != null && !email.isEmpty() &&
-                password != null && !password.isEmpty()){
+            if (globalDescriptor.isValid()){
 
                 if(value != null && value.startsWith("Error:")){
                     return FormValidation.error(value);
@@ -176,15 +166,10 @@ public class ReleaseQueueWebHookTrigger extends Trigger<AbstractProject<?, ?>> {
             ReleaseQueueGlobalDescriptor.DescriptorImpl globalDescriptor =
                 (ReleaseQueueGlobalDescriptor.DescriptorImpl)Jenkins.getInstance().getDescriptor(ReleaseQueueGlobalDescriptor.class);
 
-            String serverUrl = globalDescriptor.getServerUrl(),
-                   email = globalDescriptor.getEmail(),
-                   password = globalDescriptor.getPassword();
 
             ListBoxModel items = new ListBoxModel();
 
-            if (serverUrl != null && !serverUrl.isEmpty() &&
-                email != null && !email.isEmpty() &&
-                password != null && !password.isEmpty()){
+            if (globalDescriptor.isValid()){
 
                 try{
                     ServerConnection server = ConnectionManager.getConnection();
@@ -207,13 +192,7 @@ public class ReleaseQueueWebHookTrigger extends Trigger<AbstractProject<?, ?>> {
             ReleaseQueueGlobalDescriptor.DescriptorImpl globalDescriptor =
                 (ReleaseQueueGlobalDescriptor.DescriptorImpl)Jenkins.getInstance().getDescriptor(ReleaseQueueGlobalDescriptor.class);
 
-            String serverUrl = globalDescriptor.getServerUrl(),
-                   email = globalDescriptor.getEmail(),
-                   password = globalDescriptor.getPassword();
-
-            if (serverUrl != null && !serverUrl.isEmpty() &&
-                email != null && !email.isEmpty() &&
-                password != null && !password.isEmpty()){
+            if (globalDescriptor.isValid()){
 
                 if(value != null && value.startsWith("Error:")){
                     return FormValidation.error(value);

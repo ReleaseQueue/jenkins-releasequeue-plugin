@@ -19,9 +19,7 @@ import org.kohsuke.stapler.bind.JavaScriptMethod;
 
 import java.io.*;
 import jenkins.model.Jenkins;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.StatusLine;
 import org.apache.http.util.EntityUtils;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -91,7 +89,7 @@ public class ReleaseQueuePackagePublisher extends Notifier {
 
         ReleaseQueueGlobalDescriptor.DescriptorImpl globalDescriptor =
             (ReleaseQueueGlobalDescriptor.DescriptorImpl)Jenkins.getInstance().getDescriptor(ReleaseQueueGlobalDescriptor.class);
-        server.setCredentials(globalDescriptor.getServerUrl(), globalDescriptor.getEmail(), globalDescriptor.getPassword());
+        server.setCredentials(globalDescriptor.getServerUrl(), globalDescriptor.getUserName(), globalDescriptor.getApiKey());
 
         FilePath workspace = build.getWorkspace();
 
@@ -138,19 +136,13 @@ public class ReleaseQueuePackagePublisher extends Notifier {
             ReleaseQueueGlobalDescriptor.DescriptorImpl globalDescriptor =
                 (ReleaseQueueGlobalDescriptor.DescriptorImpl)Jenkins.getInstance().getDescriptor(ReleaseQueueGlobalDescriptor.class);
 
-            String serverUrl = globalDescriptor.getServerUrl(),
-                   email = globalDescriptor.getEmail(),
-                   password = globalDescriptor.getPassword();
-
-             return serverUrl != null && !serverUrl.isEmpty() &&
-                    email != null && !email.isEmpty() &&
-                    password != null && !password.isEmpty();
+             return globalDescriptor.isValid();
 
         }
 
         private FormValidation missingGlobalConfig(){
             return FormValidation.error("Missing global configuration." +
-                "Go to 'Config System' and fill in email and user");
+                "Go to 'Config System' and fill in user and api key");
         }
 
         public FormValidation doCheckDistribution(@QueryParameter String value) {
